@@ -1,0 +1,6 @@
+projectservice/.env
+projectservice/node_modules
+
+tasksservice/.env
+tasksservice/node_modules
+
