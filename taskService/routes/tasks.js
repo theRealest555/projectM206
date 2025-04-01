@@ -136,6 +136,23 @@ router.put('/update-status/:id', verifyToken, async (req, res) => {
     }
 });
 
+router.get('/kanban', verifyToken, async (req, res) => {
+    try {
+        const tasks = await Task.find();
+        
+        const kanban = {
+            todo: tasks.filter(task => task.status === 'to do'),
+            inProgress: tasks.filter(task => task.status === 'in progress'),
+            done: tasks.filter(task => task.status === 'done')
+        };
+
+        res.json(kanban);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/');
