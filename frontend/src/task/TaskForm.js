@@ -17,10 +17,9 @@ const TaskForm = () => {
   const [projectOptions, setProjectOptions] = useState([]);
 
   useEffect(() => {
-    // Fetch projects for dropdown
     const fetchProjects = async () => {
       try {
-        const response = await axios.get('/api/projects/all');
+        const response = await axios.get('http://localhost:3002/projects/all');
         setProjectOptions(response.data);
       } catch (error) {
         console.error('Error fetching projects:', error);
@@ -31,7 +30,7 @@ const TaskForm = () => {
     if (id) {
       const fetchTask = async () => {
         try {
-          const response = await axios.get(`/api/tasks/all?id=${id}`);
+          const response = await axios.get(`http://localhost:3002/tasks/show/${id}`);
           setTask({
             ...response.data[0],
             deadline: response.data[0].deadline.split('T')[0]
@@ -49,9 +48,9 @@ const TaskForm = () => {
     setLoading(true);
     try {
       if (id) {
-        await axios.put(`/api/tasks/update/${id}`, task);
+        await axios.put(`http://localhost:3002/tasks/update/${id}`, task);
       } else {
-        await axios.post('/api/tasks/add', task);
+        await axios.post('http://localhost:3002/tasks/add', task);
       }
       navigate('/tasks');
     } catch (error) {

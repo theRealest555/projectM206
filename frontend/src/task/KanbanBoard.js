@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 const KanbanBoard = () => {
@@ -13,7 +14,7 @@ const KanbanBoard = () => {
   useEffect(() => {
     const fetchKanban = async () => {
       try {
-        const response = await axios.get('/api/tasks/kanban');
+        const response = await axios.get('http://localhost:3002/tasks/kanban');
         setColumns({
           todo: response.data.todo,
           inProgress: response.data.inProgress,
@@ -34,7 +35,7 @@ const KanbanBoard = () => {
     const newStatus = result.destination.droppableId;
     
     try {
-      await axios.put(`/api/tasks/update-status/${taskId}`, { status: newStatus });
+      await axios.put(`http://localhost:3002/tasks/update-status/${taskId}`, { status: newStatus });
       const updatedColumns = { ...columns };
       const task = updatedColumns[result.source.droppableId].find(t => t._id === taskId);
       updatedColumns[result.source.droppableId] = updatedColumns[result.source.droppableId].filter(t => t._id !== taskId);

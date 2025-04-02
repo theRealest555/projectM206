@@ -19,12 +19,13 @@ const ProjectForm = () => {
     if (id) {
       const fetchProject = async () => {
         try {
-          const response = await axios.get(`/api/projects/all?id=${id}`);
-          const project = response.data[0];
+          const response = await axios.get(`http://localhost:3001/project/show/${id}`);
+          const project = response.data;
+          
           setFormData({
             ...project,
-            startDate: project.startDate.split('T')[0],
-            endDate: project.endDate.split('T')[0]
+            startDate: project.startDate ? project.startDate.split('T')[0] : '',
+            endDate: project.endDate ? project.endDate.split('T')[0] : ''
           });
         } catch (error) {
           console.error('Error fetching project:', error);
@@ -32,16 +33,16 @@ const ProjectForm = () => {
       };
       fetchProject();
     }
-  }, [id]);
+  }, [id]);  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       if (id) {
-        await axios.put(`/api/projects/update/${id}`, formData);
+        await axios.put(`http://localhost:3001/project/update/${id}`, formData);
       } else {
-        await axios.post('/api/projects/add', formData);
+        await axios.post('http://localhost:3001/project/add', formData);
       }
       navigate('/');
     } catch (error) {

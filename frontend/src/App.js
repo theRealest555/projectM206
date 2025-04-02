@@ -1,11 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import ProjectList from './components/projects/ProjectList';
-import ProjectForm from './components/projects/ProjectForm';
-import TaskList from './components/tasks/TaskList';
-import TaskForm from './components/tasks/TaskForm';
-import KanbanBoard from './components/tasks/KanbanBoard';
-import TaskDetail from './components/tasks/TaskDetail';
+import ProjectList from './project/ProjectList';
+import ProjectForm from './project/ProjectForm';
+import TaskList from './task/TaskList';
+import TaskForm from './task/TaskForm';
+import KanbanBoard from './task/KanbanBoard';
+import TaskDetail from './task/TaskDetail';
 import './index.css';
 
 function App() {

@@ -13,6 +13,21 @@ router.get('/all', verifyToken, async (req, res) => {
     }
 });
 
+router.get('/show/:id', verifyToken, async (req, res) => {
+    try {
+        const taskId = req.params.id;
+        const task = await Task.findOne({ id: taskId });
+
+        if (!task) {
+            return res.status(404).json({ message: 'Tâche non trouvée' });
+        }
+
+        res.json(task);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 router.post('/add', verifyToken, async (req, res) => {
     try {
         const newTask = new Task(req.body);
