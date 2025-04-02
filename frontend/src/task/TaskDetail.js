@@ -13,7 +13,7 @@ const TaskDetail = () => {
 
   const fetchTask = async () => {
     try {
-      const response = await axios.get(`http://localhost:3001/tasks/all?id=${id}`);
+      const response = await axios.get(`http://localhost:3001/tasks/show/${id}`);
       setTask(response.data[0]);
     } catch (error) {
       console.error('Error fetching task:', error);
