@@ -6,10 +6,18 @@ import SearchBar from './SearchBar';
 const ProjectList = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchParams, setSearchParams] = useState({
+    name: '',
+    startDate: '',
+    endDate: '',
+    status: '',
+  });
 
-  const fetchProjects = async () => {
+  const fetchProjects = async (params = {}) => {
+    setLoading(true);
     try {
-      const response = await axios.get('http://localhost:3001/project/all');
+      const queryString = new URLSearchParams(params).toString();
+      const response = await axios.get(`http://localhost:3001/project/search?${queryString}`);
       setProjects(response.data);
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -22,15 +30,16 @@ const ProjectList = () => {
     fetchProjects();
   }, []);
 
-  const handleSearch = (searchParams) => {
-    fetchProjects(searchParams);
+  const handleSearch = (newParams) => {
+    setSearchParams(newParams);
+    fetchProjects(newParams);
   };
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this project?')) {
       try {
         await axios.delete(`http://localhost:3001/project/delete/${id}`);
-        fetchProjects();
+        fetchProjects(searchParams);
       } catch (error) {
         console.error('Error deleting project:', error);
       }
@@ -56,7 +65,7 @@ const ProjectList = () => {
         </Link>
       </div>
       
-      <SearchBar onSearch={handleSearch} />
+      <SearchBar searchParams={searchParams} onSearch={handleSearch} />
       
       {projects.length === 0 ? (
         <div className="card shadow">

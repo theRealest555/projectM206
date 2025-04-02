@@ -7,25 +7,34 @@ const TaskList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
 
+  const API_BASE_URL = 'http://localhost:3002/tasks';
+
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchTasks = async () => {
       try {
-        const response = await axios.get('http://localhost:3002/tasks/all');
-        setTasks(response.data);
+        const response = await axios.get(`${API_BASE_URL}/all`);
+        if (isMounted) setTasks(response.data);
       } catch (error) {
         console.error('Error fetching tasks:', error);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
+
     fetchTasks();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this task?')) {
       try {
-        await axios.delete(`/api/tasks/delete/${id}`);
-        setTasks(tasks.filter(task => task._id !== id));
+        await axios.delete(`${API_BASE_URL}/delete/${id}`);
+        setTasks((prevTasks) => prevTasks.filter(task => task.id !== id));
       } catch (error) {
         console.error('Error deleting task:', error);
       }
@@ -108,9 +117,9 @@ const TaskList = () => {
                 </thead>
                 <tbody>
                   {filteredTasks.map(task => (
-                    <tr key={task._id}>
+                    <tr key={task.id}>
                       <td>
-                        <Link to={`/tasks/${task._id}`} className="text-decoration-none">
+                        <Link to={`/tasks/${task.id}`} className="text-decoration-none">
                           {task.title}
                         </Link>
                       </td>
@@ -118,7 +127,7 @@ const TaskList = () => {
                         {task.description}
                       </td>
                       <td>
-                        {new Date(task.deadline).toLocaleDateString()}
+                        {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}
                       </td>
                       <td>
                         <span className={`badge badge-priority-${task.priority}`}>
@@ -133,21 +142,21 @@ const TaskList = () => {
                       <td>
                         <div className="d-flex gap-2">
                           <Link 
-                            to={`/tasks/${task._id}`} 
+                            to={`/tasks/${task.id}`} 
                             className="btn btn-sm btn-info"
                             title="View"
                           >
                             <i className="bi bi-eye"></i>
                           </Link>
                           <Link 
-                            to={`/tasks/edit/${task._id}`} 
+                            to={`/tasks/edit/${task.id}`} 
                             className="btn btn-sm btn-primary"
                             title="Edit"
                           >
                             <i className="bi bi-pencil"></i>
                           </Link>
                           <button 
-                            onClick={() => handleDelete(task._id)} 
+                            onClick={() => handleDelete(task.id)} 
                             className="btn btn-sm btn-danger"
                             title="Delete"
                           >

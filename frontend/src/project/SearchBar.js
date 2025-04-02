@@ -1,30 +1,21 @@
 import React, { useState } from 'react';
 
-const SearchBar = ({ onSearch }) => {
-  const [searchParams, setSearchParams] = useState({
-    name: '',
-    startDate: '',
-    endDate: '',
-    status: ''
-  });
+const SearchBar = ({ searchParams, onSearch }) => {
+  const [localSearch, setLocalSearch] = useState(searchParams); // Keep local state
 
   const handleChange = (e) => {
-    setSearchParams({ ...searchParams, [e.target.name]: e.target.value });
+    setLocalSearch({ ...localSearch, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSearch(searchParams);
+    onSearch(localSearch); // Only search when clicking button
   };
 
   const handleReset = () => {
-    setSearchParams({
-      name: '',
-      startDate: '',
-      endDate: '',
-      status: ''
-    });
-    onSearch({});
+    const resetParams = { name: '', startDate: '', endDate: '', status: '' };
+    setLocalSearch(resetParams);
+    onSearch(resetParams);
   };
 
   return (
@@ -39,7 +30,7 @@ const SearchBar = ({ onSearch }) => {
                 className="form-control" 
                 placeholder="Search projects..." 
                 name="name" 
-                value={searchParams.name} 
+                value={localSearch.name} 
                 onChange={handleChange} 
               />
             </div>
@@ -49,7 +40,7 @@ const SearchBar = ({ onSearch }) => {
                 type="date" 
                 className="form-control" 
                 name="startDate" 
-                value={searchParams.startDate} 
+                value={localSearch.startDate} 
                 onChange={handleChange} 
               />
             </div>
@@ -59,7 +50,7 @@ const SearchBar = ({ onSearch }) => {
                 type="date" 
                 className="form-control" 
                 name="endDate" 
-                value={searchParams.endDate} 
+                value={localSearch.endDate} 
                 onChange={handleChange} 
               />
             </div>
@@ -68,7 +59,7 @@ const SearchBar = ({ onSearch }) => {
               <select 
                 className="form-select" 
                 name="status" 
-                value={searchParams.status} 
+                value={localSearch.status} 
                 onChange={handleChange}
               >
                 <option value="">All Statuses</option>
@@ -85,7 +76,6 @@ const SearchBar = ({ onSearch }) => {
                 type="button" 
                 className="btn btn-outline-secondary" 
                 onClick={handleReset}
-                title="Reset"
               >
                 <i className="bi bi-arrow-counterclockwise"></i>
               </button>
