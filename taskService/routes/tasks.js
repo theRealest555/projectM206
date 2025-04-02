@@ -107,9 +107,6 @@ router.get('/assigned/:userId', verifyToken, async (req, res) => {
     }
 });
 
-module.exports = router;
-
-
 router.post('/comment/:id', verifyToken, async (req, res) => {
     try {
         const taskId = req.params.id;
