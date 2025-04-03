@@ -19,7 +19,7 @@ const TaskForm = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await axios.get('http://localhost:3002/projects/all');
+        const response = await axios.get('http://localhost:3001/projects/all');
         setProjectOptions(response.data);
       } catch (error) {
         console.error('Error fetching projects:', error);

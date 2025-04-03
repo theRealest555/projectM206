@@ -4,15 +4,15 @@ const http = require('http');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-const connectDB = require('./config/database'); 
-const authRoutes = require('./routes/auth'); 
+const connectDB = require('./config/db'); 
+const authRoutes = require('./routes/authRoute'); 
 const User = require('./models/User'); 
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:3001',
+    origin: 'http://localhost:3003',
     methods: ['GET', 'POST'],
   },
 });
@@ -86,7 +86,7 @@ io.on('connection', async (socket) => {
 });
 
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3003;
 server.listen(PORT, () => {
   console.log(`Serveur en écoute sur le port ${PORT}`);
 });
