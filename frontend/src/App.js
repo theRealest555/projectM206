@@ -12,6 +12,7 @@ import TaskList from './task/TaskList';
 import TaskForm from './task/TaskForm';
 import KanbanBoard from './task/KanbanBoard';
 import TaskDetail from './task/TaskDetail';
+import StatsDashboard from './StatsDashboard';
 import './App.css';
 
 const Navigation = () => {
@@ -92,6 +93,7 @@ function App() {
           <Route path="/tasks/edit/:id" element={<TaskForm />} />
           <Route path="/tasks/kanban" element={<KanbanBoard />} />
           <Route path="/tasks/:id" element={<TaskDetail />} />
+          <Route path="/stats" element={<StatsDashboard />} />
         </Routes>
       </Container>
     </Router>
