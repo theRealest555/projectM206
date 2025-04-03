@@ -3,9 +3,37 @@ services:
   auth-service:
     build: ./backend/auth-service
     ports:
-      - "5001:5001"
+      - "3003:3003"
     environment:
       - MONGO_URI=mongodb://mongo:27017/auth
+      - JWT_SECRET=secret
+  project-service:
+    build: ./backend/project-service
+    ports:
+      - "3001:3001"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/projects
+      - JWT_SECRET=secret
+      - AUTH_SERVICE_URL=http://auth-service:3003
+  task-service:
+    build: ./backend/task-service
+    ports:
+      - "3002:3002"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/tasks
+      - JWT_SECRET=secret
+      - AUTH_SERVICE_URL=http://auth-service:3003
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+      - project-service
+      - task-service
+    environment:
+      - JWT_SECRET=secret
+      - AUTH_SERVICE_URL=http://auth-service:3003
   gateway:
     image: express-gateway
     depends_on:

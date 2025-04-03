@@ -6,6 +6,9 @@ import TaskList from './task/TaskList';
 import TaskForm from './task/TaskForm';
 import KanbanBoard from './task/KanbanBoard';
 import TaskDetail from './task/TaskDetail';
+import Login from './auth/Login';
+import Register from './auth/Register';
+import Home from './pages/Home';
 import './index.css';
 
 function App() {
@@ -38,12 +41,21 @@ function App() {
               </li>
             </ul>
           </div>
+          <div className="d-flex">
+            <Link className="btn btn-outline-light me-2" to="/login">
+              <i className="bi bi-box-arrow-in-right me-1"></i> Login
+            </Link>
+            <Link className="btn btn-outline-light" to="/register">
+              <i className="bi bi-person-plus me-1"></i> Register
+            </Link>
+          </div>
         </div>
       </nav>
 
       <main className="container py-4">
         <Routes>
-          <Route path="/" element={<ProjectList />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/projects" element={<ProjectList />} />
           <Route path="/projects/add" element={<ProjectForm />} />
           <Route path="/projects/edit/:id" element={<ProjectForm />} />
           <Route path="/tasks" element={<TaskList />} />
@@ -51,6 +63,8 @@ function App() {
           <Route path="/tasks/edit/:id" element={<TaskForm />} />
           <Route path="/tasks/kanban" element={<KanbanBoard />} />
           <Route path="/tasks/:id" element={<TaskDetail />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
         </Routes>
       </main>
 
