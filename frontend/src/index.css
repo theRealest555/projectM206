@@ -1,0 +1,112 @@
+:root {
+  --primary-color: #4e73df;
+  --secondary-color: #858796;
+  --success-color: #1cc88a;
+  --danger-color: #e74a3b;
+  --warning-color: #f6c23e;
+  --info-color: #36b9cc;
+}
+
+body {
+  background-color: #f8f9fc;
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.card {
+  border: none;
+  border-radius: 0.35rem;
+  box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+  background-color: #f8f9fc;
+  border-bottom: 1px solid #e3e6f0;
+}
+
+.badge {
+  font-weight: 500;
+  padding: 0.35em 0.65em;
+}
+
+.btn {
+  font-weight: 600;
+  padding: 0.375rem 0.75rem;
+  transition: all 0.2s;
+}
+
+/* Kanban Board Styles */
+.kanban-column {
+  background-color: #f8f9fc;
+  border-radius: 0.35rem;
+  min-height: 70vh;
+}
+
+.kanban-header {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.task-card {
+  cursor: move;
+  border-left: 3px solid var(--primary-color);
+}
+
+/* Priority Badges */
+.badge-priority-high {
+  background-color: var(--danger-color);
+}
+
+.badge-priority-medium {
+  background-color: var(--warning-color);
+  color: #000;
+}
+
+.badge-priority-low {
+  background-color: var(--success-color);
+}
+
+/* Status Badges */
+.badge-status-todo {
+  background-color: var(--secondary-color);
+}
+
+.badge-status-inprogress {
+  background-color: var(--info-color);
+}
+
+.badge-status-done {
+  background-color: var(--success-color);
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+/* Comment Section */
+.comment-card {
+  background-color: #f8f9fc;
+  border: 1px solid #e3e6f0;
+  border-radius: 0.25rem;
+}
+
+/* Form Styles */
+.form-control, .form-select {
+  border: 1px solid #d1d3e2;
+  border-radius: 0.35rem;
+  padding: 0.375rem 0.75rem;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #bac8f3;
+  box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+}
