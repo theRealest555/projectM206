@@ -8,7 +8,7 @@ import KanbanBoard from './task/KanbanBoard';
 import TaskDetail from './task/TaskDetail';
 import Login from './auth/Login';
 import Register from './auth/Register';
-import Home from './pages/Home';
+import Home from './home/Home';
 import './index.css';
 
 function App() {
