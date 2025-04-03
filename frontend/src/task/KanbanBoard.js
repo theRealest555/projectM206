@@ -14,7 +14,7 @@ const KanbanBoard = () => {
   useEffect(() => {
     const fetchKanban = async () => {
       try {
-        const response = await axios.get('http://localhost:3002/tasks/kanban');
+        const response = await axios.get('http://localhost:3002/task/kanban');
         setColumns({
           todo: response.data.todo,
           inProgress: response.data.inProgress,
