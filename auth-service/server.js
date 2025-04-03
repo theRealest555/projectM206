@@ -4,89 +4,118 @@ const http = require('http');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-const connectDB = require('./config/db'); 
-const authRoutes = require('./routes/authRoute'); 
-const User = require('./models/User'); 
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const connectDB = require('./config/db');
+const authRoutes = require('./routes/authRoute');
+const User = require('./models/User');
+const Message = require('./models/Message');
+const { socketAuthenticate } = require('./middlewares/socketAuth');
+const AppError = require('./utils/AppError');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: 'http://localhost:3003',
-    methods: ['GET', 'POST'],
-  },
-});
 
+app.use(helmet());
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  credentials: true
+}));
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100
+});
+app.use(limiter);
+app.use(express.json({ limit: '10kb' }));
 
 connectDB();
-
-
-app.use(express.json());
-
-
 app.use('/api/auth', authRoutes);
 
-
-const MessageSchema = new mongoose.Schema({
-  username: String,
-  message: String,
-  timestamp: { type: Date, default: Date.now },
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'healthy' });
 });
-const Message = mongoose.model('Message', MessageSchema);
 
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    methods: ['GET', 'POST']
+  },
+  connectionStateRecovery: {
+    maxDisconnectionDuration: 2 * 60 * 1000,
+    skipMiddlewares: true
+  }
+});
 
-const saveMessage = async (username, message) => {
-  const newMessage = new Message({ username, message });
-  await newMessage.save();
-};
+io.use(socketAuthenticate);
 
-const getMessages = async () => {
-  return await Message.find().sort({ timestamp: 1 });
-};
+io.on('connection', (socket) => {
+  console.log(`User connected: ${socket.user.username} (${socket.id})`);
 
-io.on('connection', async (socket) => {
-  console.log('Un utilisateur s\'est connecté:', socket.id);
+  socket.broadcast.emit('user_joined', {
+    username: socket.user.username,
+    timestamp: new Date()
+  });
 
-  socket.on('authenticate', async (token) => {
+  socket.on('load_messages', async (callback) => {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const user = await User.findById(decoded.id); 
-
-      if (user) {
-        socket.username = user.username;
-        console.log(`${user.username} a rejoint le chat.`);
-        io.emit('user_joined', `${user.username} a rejoint le chat.`);
-
-        const messages = await getMessages();
-        socket.emit('load_messages', messages);
-      } else {
-        console.log('Utilisateur non trouvé.');
-        socket.emit('authentication_error', 'Utilisateur non trouvé');
-      }
+      const messages = await Message.find().sort({ timestamp: 1 }).limit(50).lean();
+      callback(messages);
     } catch (err) {
-      console.error('Erreur d\'authentification:', err);
-      socket.emit('authentication_error', 'Token invalide');
+      callback([]);
     }
   });
 
-  socket.on('send_message', async (data) => {
-    if (socket.username) {
-      console.log('Message reçu:', data);
-      await saveMessage(socket.username, data.message);
-      io.emit('receive_message', { username: socket.username, message: data.message });
+  socket.on('send_message', async ({ text, userId }, callback) => {
+    try {
+      if (!text || typeof text !== 'string' || text.trim().length === 0) {
+        throw new AppError('Invalid message content', 400);
+      }
+
+      const newMessage = await Message.create({
+        username: socket.user.username,
+        userId: socket.user.id,
+        text: text.trim(),
+        timestamp: new Date()
+      });
+
+      io.emit('receive_message', newMessage);
+      callback({ status: 'success' });
+    } catch (err) {
+      callback({ status: 'error', message: err.message });
     }
   });
 
   socket.on('disconnect', () => {
-    if (socket.username) {
-      console.log(`${socket.username} s'est déconnecté.`);
-      io.emit('user_left', `${socket.username} a quitté le chat.`);
+    console.log(`User disconnected: ${socket.user?.username || 'Unknown'} (${socket.id})`);
+    if (socket.user?.username) {
+      socket.broadcast.emit('user_left', {
+        username: socket.user.username,
+        timestamp: new Date()
+      });
     }
+  });
+
+  socket.on('error', (err) => console.error('Socket error:', err));
+});
+
+app.use((err, req, res, next) => {
+  res.status(err.statusCode || 500).json({
+    status: 'error',
+    message: err.message || 'Internal Server Error'
   });
 });
 
-
 const PORT = process.env.PORT || 3003;
 server.listen(PORT, () => {
-  console.log(`Serveur en écoute sur le port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
+});
+
+process.on('unhandledRejection', (err) => {
+  server.close(() => process.exit(1));
+});
+
+process.on('uncaughtException', (err) => {
+  server.close(() => process.exit(1));
 });

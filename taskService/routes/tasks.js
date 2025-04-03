@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const Task = require('../models/taskmodel');
-const { verifyToken } = require('../middleware/auth');
 
-router.get('/all', verifyToken, async (req, res) => {
+
+router.get('/all',  async (req, res) => {
     try {
         const tasks = await Task.find({});
         res.json(tasks);
@@ -13,7 +13,7 @@ router.get('/all', verifyToken, async (req, res) => {
     }
 });
 
-router.get('/show/:id', verifyToken, async (req, res) => {
+router.get('/show/:id',  async (req, res) => {
     try {
         const taskId = req.params.id;
         const task = await Task.findOne({ id: taskId });
@@ -28,7 +28,7 @@ router.get('/show/:id', verifyToken, async (req, res) => {
     }
 });
 
-router.post('/add', verifyToken, async (req, res) => {
+router.post('/add',  async (req, res) => {
     try {
         const newTask = new Task(req.body);
         const data = await newTask.save();
@@ -38,7 +38,7 @@ router.post('/add', verifyToken, async (req, res) => {
     }
 });
 
-router.put('/update/:id', verifyToken, async (req, res) => {
+router.put('/update/:id',  async (req, res) => {
     try {
         const taskId = req.params.id;
         const updatedData = req.body;
@@ -54,7 +54,7 @@ router.put('/update/:id', verifyToken, async (req, res) => {
     }
 });
 
-router.delete('/delete/:id', verifyToken, async (req, res) => {
+router.delete('/delete/:id',  async (req, res) => {
     try {
         const taskId = req.params.id;
         const data = await Task.findByIdAndDelete(taskId);
@@ -70,7 +70,7 @@ router.delete('/delete/:id', verifyToken, async (req, res) => {
 });
 
 
-router.put('/assign/:taskId', verifyToken, async (req, res) => {
+router.put('/assign/:taskId',  async (req, res) => {
     try {
         const { userId } = req.body;
         const taskId = parseInt(req.params.taskId);
@@ -92,7 +92,7 @@ router.put('/assign/:taskId', verifyToken, async (req, res) => {
     }
 });
 
-router.get('/assigned/:userId', verifyToken, async (req, res) => {
+router.get('/assigned/:userId',  async (req, res) => {
     try {
         const userId = parseInt(req.params.userId)
         const tasks = await Task.find({ assignedTo: userId });
@@ -107,7 +107,7 @@ router.get('/assigned/:userId', verifyToken, async (req, res) => {
     }
 });
 
-router.post('/comment/:id', verifyToken, async (req, res) => {
+router.post('/comment/:id',  async (req, res) => {
     try {
         const taskId = req.params.id;
         const { userId, comment } = req.body;
@@ -127,7 +127,7 @@ router.post('/comment/:id', verifyToken, async (req, res) => {
     }
 });
 
-router.put('/update-status/:id', verifyToken, async (req, res) => {
+router.put('/update-status/:id',  async (req, res) => {
     try {
         const taskId = req.params.id;
         const { status } = req.body;
@@ -148,7 +148,7 @@ router.put('/update-status/:id', verifyToken, async (req, res) => {
     }
 });
 
-router.get('/kanban', verifyToken, async (req, res) => {
+router.get('/kanban',  async (req, res) => {
     try {
         const tasks = await Task.find();
         
@@ -176,7 +176,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-router.post('/upload/:id', verifyToken, upload.single('file'), async (req, res) => {
+router.post('/upload/:id',  upload.single('file'), async (req, res) => {
     try {
         const taskId = req.params.id;
         const task = await Task.findById(taskId);
@@ -198,7 +198,7 @@ router.post('/upload/:id', verifyToken, upload.single('file'), async (req, res) 
     }
 });
 
-router.get('/attachments/:id', verifyToken, async (req, res) => {
+router.get('/attachments/:id',  async (req, res) => {
     try {
         const task = await Task.findById(req.params.id);
 

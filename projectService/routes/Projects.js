@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Project = require('../models/ProjectModel');
-const { verifyToken } = require('../middleware/auth');
 
-router.get('/all', verifyToken,   async (req, res) => {
+router.get('/all',   async (req, res) => {
     try {
         const projects = await Project.find({});
         res.json(projects);
@@ -12,7 +11,7 @@ router.get('/all', verifyToken,   async (req, res) => {
     }
 });
 
-router.get('/show/:id', verifyToken,  async (req, res) => {
+router.get('/show/:id',  async (req, res) => {
     try {
         const projectId = req.params.id;
         const project = await Project.findOne({ id: projectId });
@@ -27,7 +26,7 @@ router.get('/show/:id', verifyToken,  async (req, res) => {
     }
 });
 
-router.post('/add', verifyToken, async (req, res) => {
+router.post('/add', async (req, res) => {
     try {
         const newProject = new Project(req.body);
         const data = await newProject.save();
@@ -37,7 +36,7 @@ router.post('/add', verifyToken, async (req, res) => {
     }
 });
 
-router.put('/update/:id', verifyToken,  async (req, res) => {
+router.put('/update/:id',  async (req, res) => {
     try {
         const projectId = req.params.id;
         const updatedData = req.body;
@@ -53,7 +52,7 @@ router.put('/update/:id', verifyToken,  async (req, res) => {
     }
 });
 
-router.delete('/delete/:id', verifyToken,  async (req, res) => {
+router.delete('/delete/:id',  async (req, res) => {
     try {
         const projectId = req.params.id;
         const data = await Project.findOneAndDelete({ id: projectId });
@@ -68,7 +67,7 @@ router.delete('/delete/:id', verifyToken,  async (req, res) => {
     }
 });
 
-router.get('/search', verifyToken,  async (req, res) => {
+router.get('/search',  async (req, res) => {
     try {
         const { name, startDate, endDate, status } = req.query;
         let filter = {};

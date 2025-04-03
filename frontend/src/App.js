@@ -1,60 +1,89 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link, useLocation } from 'react-router-dom';
+import { Navbar, Nav, Container, Button } from 'react-bootstrap';
+import { FiHome, FiFolder, FiList, FiTrello, FiLogIn, FiUserPlus } from 'react-icons/fi';
+import Login from './auth/Login';
+import Register from './auth/Register';
+import Home from './home/Home';
+import Chat from './auth/Chat';
 import ProjectList from './project/ProjectList';
 import ProjectForm from './project/ProjectForm';
 import TaskList from './task/TaskList';
 import TaskForm from './task/TaskForm';
 import KanbanBoard from './task/KanbanBoard';
 import TaskDetail from './task/TaskDetail';
-import Login from './auth/Login';
-import Register from './auth/Register';
-import Home from './home/Home';
-import './index.css';
+import './App.css';
+
+const Navigation = () => {
+  const location = useLocation();
+  const token = localStorage.getItem('token');
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    window.location.reload();
+  };
+
+  if (!token && location.pathname !== '/login' && location.pathname !== '/register') {
+    return null;
+  }
+
+  return (
+    <Navbar bg="primary" variant="dark" expand="lg" className="shadow">
+      <Container>
+        <Navbar.Brand as={Link} to="/">
+          <span className="fw-bold">Project Manager</span>
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="me-auto">
+            <Nav.Link as={Link} to="/" className="d-flex align-items-center gap-1">
+              <FiHome /> Home
+            </Nav.Link>
+            <Nav.Link as={Link} to="/projects" className="d-flex align-items-center gap-1">
+              <FiFolder /> Projects
+            </Nav.Link>
+            <Nav.Link as={Link} to="/tasks" className="d-flex align-items-center gap-1">
+              <FiList /> Tasks
+            </Nav.Link>
+            <Nav.Link as={Link} to="/tasks/kanban" className="d-flex align-items-center gap-1">
+              <FiTrello /> Kanban
+            </Nav.Link>
+            <Nav.Link as={Link} to="/chat" className="d-flex align-items-center gap-1">
+              Chat
+            </Nav.Link>
+          </Nav>
+          <Nav>
+            {token ? (
+              <Button variant="outline-light" onClick={handleLogout}>
+                Logout
+              </Button>
+            ) : (
+              <>
+                <Nav.Link as={Link} to="/login" className="d-flex align-items-center gap-1">
+                  <FiLogIn /> Login
+                </Nav.Link>
+                <Nav.Link as={Link} to="/register" className="d-flex align-items-center gap-1">
+                  <FiUserPlus /> Register
+                </Nav.Link>
+              </>
+            )}
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
+  );
+};
 
 function App() {
   return (
     <Router>
-      <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow">
-        <div className="container">
-          <Link className="navbar-brand fw-bold" to="/">
-            <i className="bi bi-kanban me-2"></i>Project Manager
-          </Link>
-          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span className="navbar-toggler-icon"></span>
-          </button>
-          <div className="collapse navbar-collapse" id="navbarNav">
-            <ul className="navbar-nav me-auto">
-              <li className="nav-item">
-                <Link className="nav-link" to="/">
-                  <i className="bi bi-folder me-1"></i> Projects
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/tasks">
-                  <i className="bi bi-list-task me-1"></i> Tasks
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/tasks/kanban">
-                  <i className="bi bi-kanban me-1"></i> Kanban
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div className="d-flex">
-            <Link className="btn btn-outline-light me-2" to="/login">
-              <i className="bi bi-box-arrow-in-right me-1"></i> Login
-            </Link>
-            <Link className="btn btn-outline-light" to="/register">
-              <i className="bi bi-person-plus me-1"></i> Register
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      <main className="container py-4">
+      <Navigation />
+      <Container className="py-4">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/chat" element={<Chat />} />
           <Route path="/projects" element={<ProjectList />} />
           <Route path="/projects/add" element={<ProjectForm />} />
           <Route path="/projects/edit/:id" element={<ProjectForm />} />
@@ -63,16 +92,8 @@ function App() {
           <Route path="/tasks/edit/:id" element={<TaskForm />} />
           <Route path="/tasks/kanban" element={<KanbanBoard />} />
           <Route path="/tasks/:id" element={<TaskDetail />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
         </Routes>
-      </main>
-
-      <footer className="bg-light py-3 mt-5 border-top">
-        <div className="container text-center text-muted">
-          <small>Project Manager © {new Date().getFullYear()}</small>
-        </div>
-      </footer>
+      </Container>
     </Router>
   );
 }

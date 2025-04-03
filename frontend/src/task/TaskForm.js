@@ -11,7 +11,8 @@ const TaskForm = () => {
     priority: 'medium',
     deadline: '',
     assignedTo: '',
-    status: 'to do'
+    status: 'to do',
+    projectId: '' 
   });
   const [loading, setLoading] = useState(false);
   const [projectOptions, setProjectOptions] = useState([]);
@@ -19,28 +20,29 @@ const TaskForm = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/projects/all');
+        const response = await axios.get('http://localhost:3001/project/all');
         setProjectOptions(response.data);
       } catch (error) {
-        console.error('Error fetching projects:', error);
+        console.error('Error fetching projects:', error.response?.data || error.message);
       }
     };
-    fetchProjects();
 
-    if (id) {
-      const fetchTask = async () => {
-        try {
-          const response = await axios.get(`http://localhost:3002/tasks/show/${id}`);
-          setTask({
-            ...response.data[0],
-            deadline: response.data[0].deadline.split('T')[0]
-          });
-        } catch (error) {
-          console.error('Error fetching task:', error);
-        }
-      };
-      fetchTask();
-    }
+    // Fetch task if editing
+    const fetchTask = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3002/task/show/${id}`);
+        setTask({
+          ...response.data[0],
+          deadline: response.data[0]?.deadline?.split('T')[0] || '',
+          projectId: response.data[0]?.projectId || ''
+        });
+      } catch (error) {
+        console.error('Error fetching task:', error.response?.data || error.message);
+      }
+    };
+
+    fetchProjects();
+    if (id) fetchTask();
   }, [id]);
 
   const handleSubmit = async (e) => {
@@ -48,13 +50,13 @@ const TaskForm = () => {
     setLoading(true);
     try {
       if (id) {
-        await axios.put(`http://localhost:3002/tasks/update/${id}`, task);
+        await axios.put(`http://localhost:3002/task/update/${id}`, task);
       } else {
-        await axios.post('http://localhost:3002/tasks/add', task);
+        await axios.post('http://localhost:3002/task/add', task);
       }
       navigate('/tasks');
     } catch (error) {
-      console.error('Error saving task:', error);
+      console.error('Error saving task:', error.response?.data || error.message);
     } finally {
       setLoading(false);
     }
@@ -93,11 +95,16 @@ const TaskForm = () => {
                 name="projectId" 
                 value={task.projectId} 
                 onChange={handleChange}
+                required
               >
                 <option value="">Select Project</option>
-                {projectOptions.map(project => (
-                  <option key={project.id} value={project.id}>{project.name}</option>
-                ))}
+                {projectOptions.length > 0 ? (
+                  projectOptions.map(project => (
+                    <option key={project._id} value={project._id}>{project.name}</option>
+                  ))
+                ) : (
+                  <option value="" disabled>Loading projects...</option>
+                )}
               </select>
             </div>
           </div>
@@ -122,6 +129,7 @@ const TaskForm = () => {
                 name="priority" 
                 value={task.priority} 
                 onChange={handleChange}
+                required
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -135,6 +143,7 @@ const TaskForm = () => {
                 name="status" 
                 value={task.status} 
                 onChange={handleChange}
+                required
               >
                 <option value="to do">To Do</option>
                 <option value="in progress">In Progress</option>

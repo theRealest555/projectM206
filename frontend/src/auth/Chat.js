@@ -1,87 +1,136 @@
-import React, { useState, useEffect } from 'react'
-import io from 'socket.io-client'
-import './Chat.css'
-
-const socket = io('http://localhost:3003')
+import React, { useState, useEffect, useRef } from 'react';
+import { Container, Card, Form, Button, ListGroup, Alert, Spinner } from 'react-bootstrap';
+import { FiSend, FiAlertCircle } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
 
 const Chat = () => {
-  const [message, setMessage] = useState('')
-  const [messages, setMessages] = useState([])
-  const [error, setError] = useState('')
-
-  const token = localStorage.getItem('token')
+  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [error, setError] = useState('');
+  const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(true);
+  const socketRef = useRef(null);
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem('user'));
 
   useEffect(() => {
-    if (token) {
-      socket.emit('authenticate', token)
-    } else {
-      setError('Vous devez être connecté pour rejoindre le chat')
+    if (!user) {
+      navigate('/login');
+      return;
     }
 
-    socket.on('load_messages', (messages) => {
-      setMessages(messages)
-    })
+    socketRef.current = io(process.env.REACT_APP_WS_URL || 'http://localhost:3003', {
+      withCredentials: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      transports: ['websocket']
+    });
 
-    socket.on('receive_message', (data) => {
-      setMessages((prevMessages) => [...prevMessages, data])
-    })
+    const socket = socketRef.current;
 
-    socket.on('user_joined', (message) => {
-      setMessages((prevMessages) => [...prevMessages, { username: 'System', message }])
-    })
+    const handleConnect = () => {
+      setIsConnected(true);
+      setIsConnecting(false);
+      socket.emit('authenticate', { token: localStorage.getItem('token') });
+    };
 
-    socket.on('user_left', (message) => {
-      setMessages((prevMessages) => [...prevMessages, { username: 'System', message }])
-    })
+    const handleDisconnect = () => {
+      setIsConnected(false);
+      setError('Disconnected from server. Reconnecting...');
+    };
 
-    socket.on('authentication_error', (errorMessage) => {
-      setError(errorMessage)
-    })
+    const handleConnectError = (err) => {
+      setIsConnecting(false);
+      setError(`Connection failed: ${err.message}`);
+    };
+
+    socket.on('connect', handleConnect);
+    socket.on('disconnect', handleDisconnect);
+    socket.on('connect_error', handleConnectError);
+    socket.on('receive_message', (msg) => setMessages(prev => [...prev, msg]));
+
+    socket.connect();
 
     return () => {
-      socket.off('load_messages')
-      socket.off('receive_message')
-      socket.off('user_joined')
-      socket.off('user_left')
-      socket.off('authentication_error')
-    }
-  }, [token])
+      socket.off('connect', handleConnect);
+      socket.off('disconnect', handleDisconnect);
+      socket.off('connect_error', handleConnectError);
+      socket.off('receive_message');
+      socket.disconnect();
+    };
+  }, [navigate, user]);
 
-  const sendMessage = () => {
-    if (message.trim()) {
-      socket.emit('send_message', { message })
-      setMessage('')
+  const sendMessage = (e) => {
+    e.preventDefault();
+    if (message.trim() && isConnected && socketRef.current) {
+      socketRef.current.emit('send_message', {
+        text: message.trim(),
+        userId: user._id
+      });
+      setMessage('');
     }
-  }
+  };
+
+  if (!user) return null;
 
   return (
-    <div className="chat-container">
-      <h1>Chat en temps réel</h1>
-      {error ? (
-        <p className="error">{error}</p>
-      ) : (
-        <div className="chat-window">
-          <div className="messages">
-            {messages.map((msg, index) => (
-              <div key={index} className="message">
-                <strong>{msg.username}:</strong> {msg.message}
-              </div>
-            ))}
+    <Container className="py-4">
+      <Card>
+        <Card.Header className="d-flex justify-content-between align-items-center">
+          <h4 className="mb-0">Live Chat</h4>
+          <div>
+            {isConnecting ? (
+              <Spinner animation="border" size="sm" variant="primary" />
+            ) : (
+              <span className={`badge ${isConnected ? 'bg-success' : 'bg-danger'}`}>
+                {isConnected ? 'Connected' : 'Disconnected'}
+              </span>
+            )}
           </div>
-          <div className="message-input">
-            <input
-              type="text"
-              placeholder="Tapez votre message..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-            />
-            <button onClick={sendMessage}>Envoyer</button>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
+        </Card.Header>
+        
+        <Card.Body>
+          {error && (
+            <Alert variant="danger" className="d-flex align-items-center">
+              <FiAlertCircle className="me-2" />
+              {error}
+            </Alert>
+          )}
 
-export default Chat
+          <ListGroup className="mb-3 chat-messages">
+            {messages.map((msg, i) => (
+              <ListGroup.Item key={i} className="message">
+                <strong>{msg.username || 'Anonymous'}:</strong> {msg.text}
+                <div className="text-muted small">
+                  {new Date(msg.timestamp).toLocaleTimeString()}
+                </div>
+              </ListGroup.Item>
+            ))}
+          </ListGroup>
+
+          <Form onSubmit={sendMessage}>
+            <div className="d-flex gap-2">
+              <Form.Control
+                type="text"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Type your message..."
+                disabled={!isConnected}
+              />
+              <Button 
+                variant="primary" 
+                type="submit"
+                disabled={!message.trim() || !isConnected}
+              >
+                <FiSend className="me-1" /> Send
+              </Button>
+            </div>
+          </Form>
+        </Card.Body>
+      </Card>
+    </Container>
+  );
+};
+
+export default Chat;

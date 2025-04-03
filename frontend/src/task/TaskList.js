@@ -7,7 +7,7 @@ const TaskList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const API_BASE_URL = 'http://localhost:3002/tasks';
+  const API_BASE_URL = 'http://localhost:3002/task';
 
   useEffect(() => {
     let isMounted = true;

@@ -8,7 +8,7 @@ const TaskSchema = new Schema({
     description: { type: String, required: true },
     priority: { type: String, enum: ['low', 'medium', 'high'], required: true },
     deadline: { type: Date, required: true },
-    assignedTo: { type: Number, required: true },
+    assignedTo: { type: String, required: true },
     status: { type: String, enum: ['to do', 'in progress', 'done'], default: 'to do' },
     comments: [{ userId: String, comment: String, date: Date }],
     attachments: [{ filename: String, fileUrl: String }],
