@@ -13,8 +13,8 @@ mongoose.connect("mongodb://mongo:27017/authDB", {
 });
 
 
-const Task = require("./models/Task");
-const Project = require("./models/Project");
+const Task = require("../taskService/models/taskmodel");
+const Project = require("../projectService/models/ProjectModel");
 
 
 app.get("/stats", async (req, res) => {
